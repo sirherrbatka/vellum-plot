@@ -2,7 +2,7 @@
 
 
 (asdf:defsystem vellum-plot
-  :name "vellum-postmodern"
+  :name "vellum-plot"
   :version "0.0.0"
   :license "BSD simplified"
   :author "Marek Kochanowicz"
