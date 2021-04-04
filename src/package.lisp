@@ -8,6 +8,7 @@
    #:points
    #:stack
    #:line
+   #:missing-required-slot
    #:mapping
    #:heatmap
    #:axis

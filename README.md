@@ -25,7 +25,7 @@ To demonstrate, the following example defines ROC plot, demonstrating balance of
         :dtick 0.1
         :range '(0.0 1.0)
         :scale-anchor :x
-        :label "Metrics"
+        :label "TPR"
         :scale-ratio 1))
    (vellum-plot:line
     :mapping (vellum-plot:mapping :x "FPR" :y "TPR")
