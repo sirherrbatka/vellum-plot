@@ -41,3 +41,7 @@ Defined plot can be visualized using the vellum:visualize function. In theory, v
 
 ## Other options
 In addition to the plain line plots, heatmaps and points are also supported. Hopefully more types of plots can be added in the future.
+
+
+## Future work
+As already stated this system is very much the work in progress. For one, the error handling should be improved. As for the extra features, well: more backends, more plot types.
