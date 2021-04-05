@@ -16,7 +16,8 @@
 
 
 (defmacro value (content)
-  `(let ((result (ignore-errors ,content)))
+  `(let ((result (handler-case ,content
+                   (missing-required-slot (e) nil))))
      (unless (null result)
        (json-format *json-stream* result))))
 
