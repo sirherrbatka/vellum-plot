@@ -1,6 +1,12 @@
 (cl:in-package #:vellum-plot)
 
 
+(defun read-new-value ()
+  (format *query-io* "Enter a new value.")
+  (force-output *query-io*)
+  (eval (read)))
+
+
 (defmacro with-bind-slot-restart (&body body)
   (with-gensyms (!condition !block)
     `(tagbody ,!block
