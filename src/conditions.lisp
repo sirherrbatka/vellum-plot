@@ -8,17 +8,20 @@
 
 
 (defmacro with-bind-slot-restart (&body body)
-  (with-gensyms (!condition !block)
-    `(tagbody ,!block
-        (let ((,!condition nil))
-          (restart-case (handler-case (progn ,@body)
-                          (condition (e)
-                            (setf ,!condition e)
-                            (error e)))
-            (bind-slot (new-value)
-              :interactive read-new-value
-              :report "Bind slot of the object."
-              (setf (slot-value (unbound-slot-instance ,!condition)
-                                (cell-error-name ,!condition))
-                    new-value)
-              (go ,!block)))))))
+  (with-gensyms (!condition !block !result !return)
+    `(block ,!return
+       (tagbody ,!block
+          (let ((,!condition nil)
+                (,!result nil))
+            (restart-case (handler-case (setf ,!result (progn ,@body))
+                            (condition (e)
+                              (setf ,!condition e)
+                              (error e)))
+              (bind-slot (new-value)
+                :interactive read-new-value
+                :report "Bind slot of the object."
+                (setf (slot-value (unbound-slot-instance ,!condition)
+                                  (cell-error-name ,!condition))
+                      new-value)
+                (go ,!block)))
+            (return-from ,!return ,!result))))))

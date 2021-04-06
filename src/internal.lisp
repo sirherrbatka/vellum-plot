@@ -18,8 +18,7 @@
 (defmacro value (content)
   `(let ((result (handler-case ,content
                    (unbound-slot (e)
-                     (declare (ignore e))
-                     nil))))
+                     (declare (ignore e)) nil))))
      (unless (null result)
        (json-format *json-stream* result))))
 
