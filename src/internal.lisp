@@ -157,7 +157,8 @@
                      (slot "size" (var size)))
                    (when label
                      (slot "text" (var label)))
-                   (slot "textposition" (value (and aesthetics (label-position aesthetics))))))
+                   (slot "textposition"
+                         (value (and aesthetics (label-position aesthetics))))))
            (slot "list" (object #1#))))))))
 
 
