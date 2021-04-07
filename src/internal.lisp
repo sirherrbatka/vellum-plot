@@ -111,7 +111,6 @@
          (color (with-bind-slot-restart (color mapping)))
          (shape (with-bind-slot-restart (shape mapping)))
          (label  (with-bind-slot-restart (label mapping)))
-         (label-position (with-bind-slot-restart (label-position aesthetics)))
          (size (with-bind-slot-restart (size mapping))))
     (declare (ignore shape))
     (macrolet ((set-name (axis)
@@ -148,7 +147,7 @@
              (slot "z" (var z)))
            (slot "mode" (value (plotly-mode geometrics mapping)))
            (slot "type" (value (plotly-type geometrics)))
-           (slot "name" (value (label aesthetics)))
+           (slot "name" (value (and aesthetics (label aesthetics))))
            (slot "marker"
                  (object
                    #1=(cond
@@ -158,7 +157,7 @@
                      (slot "size" (var size)))
                    (when label
                      (slot "text" (var label)))
-                   (slot "textposition" (value label-position))))
+                   (slot "textposition" (value (and aesthetics (label-position aesthetics))))))
            (slot "list" (object #1#))))))))
 
 
