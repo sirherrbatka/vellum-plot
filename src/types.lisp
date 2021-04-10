@@ -30,6 +30,10 @@
   ())
 
 
+(defclass facets-layer (fundamental-layer)
+  ())
+
+
 (defclass geometrics-layer (fundamental-layer)
   ((%mapping :initarg :mapping
              :reader read-mapping)
@@ -108,3 +112,10 @@
                     :reader label-position)
    (%size :initarg :size
           :reader size)))
+
+
+(defclass grid-layer (facets-layer)
+  ((%rows :initarg :rows
+          :reader rows)
+   (%columns :initarg :columns
+             :reader columns)))

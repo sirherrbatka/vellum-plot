@@ -10,6 +10,7 @@
    #:line
    #:missing-required-slot
    #:mapping
+   #:grid
    #:heatmap
    #:axis
    #:add))

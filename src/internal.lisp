@@ -11,7 +11,7 @@
            (,!output (with-output-to-string (*json-stream*)
                        ,content)))
        (unless (emptyp ,!output)
-         (format *json-stream* "'~a': ~a" ,name ,!output)
+         (format *json-stream* "~a: ~a" ,name ,!output)
          (format *json-stream* ",~%")))))
 
 
@@ -21,6 +21,20 @@
                      (declare (ignore e)) nil))))
      (unless (null result)
        (json-format *json-stream* result))))
+
+
+(defmacro valuel (content label)
+  `(let ((field-value (handler-case ,content
+                   (unbound-slot (e)
+                     (declare (ignore e)) nil))))
+     (unless (null field-value)
+       (format *json-stream* "~a"
+               (etypecase field-value
+                 (symbol (format nil "'~(~a~)~a'" (symbol-name field-value) ,label))
+                 (list (format nil "[~{~a~^, ~}]" field-value))
+                 (float (format nil "~F" field-value))
+                 (string (format nil "'~a~a'" field-value ,label))
+                 (integer field-value))))))
 
 
 (defun var (content)
@@ -99,9 +113,9 @@
         (plotly-format *json-stream* field-name field-value)
         t)))
 
-
-(defun plotly-generate-data/impl (stack geometrics index.table)
+(defun plotly-generate-data/impl (stack geometrics index.table number)
   (bind ((mapping (read-mapping geometrics))
+         (facets (facets-layer stack))
          (data (data-layer stack))
          (table (cdr index.table))
          (aesthetics (read-aesthetics geometrics))
@@ -141,6 +155,12 @@
      (with-output-to-string (stream)
        (json (stream)
          (object
+           (slot "xaxis" (if (null facets)
+                             (value "x")
+                             (valuel :x number)))
+           (slot "yaxis" (if (null facets)
+                             (value "y")
+                             (valuel :y number)))
            (slot "x" (var x))
            (slot "y" (var y))
            (unless (null z)
@@ -167,7 +187,8 @@
     (with geometrics = (geometrics-layers stack))
     (with index.table = (cons 0 (make-hash-table)))
     (for g in geometrics)
-    (collect (plotly-generate-data/impl stack g index.table)
+    (for i from 1)
+    (collect (plotly-generate-data/impl stack g index.table i)
       into data-forms)
     (finally (return (values data-forms
                              (~> index.table
@@ -175,7 +196,24 @@
                                  hash-table-values))))))
 
 
-(defun plotly-format-axis (mapping axis)
+(defgeneric plotly-generate-facets (facets))
+
+
+(defmethod plotly-generate-facets ((facets (eql nil)))
+  (list nil nil))
+
+
+(defmethod plotly-generate-facets ((facets grid-layer))
+  (list "grid"
+        (with-output-to-string (stream)
+          (json (stream)
+            (object
+              (slot "pattern" (value "independent"))
+              (slot "rows" (value (rows facets)))
+              (slot "columns" (value (columns facets))))))))
+
+
+(defun plotly-format-axis (facets mapping axis number)
   (when axis
     (object
       (slot "title"
@@ -184,7 +222,9 @@
                      (plotly-format-no-nulls "text" (label axis)))
                     (mapping
                      (plotly-format-no-nulls "text" mapping)))))
-      (slot "scaleanchor" (value (scale-anchor axis)))
+      (slot "scaleanchor" (if facets
+                              (valuel (scale-anchor axis) number)
+                              (value (scale-anchor axis))))
       (slot "range" (value (range axis)))
       (slot "constrain" (value (constrain axis)))
       (slot "scaleratio" (value (scale-ratio axis)))
@@ -194,24 +234,39 @@
 
 (defun plotly-generate-layout (stack)
   (bind ((aesthetics (aesthetics-layer stack))
+         (facets (facets-layer stack))
+         ((slot facets-object) (plotly-generate-facets facets))
          (xaxis (x aesthetics))
          (yaxis (y aesthetics))
          (geometrics (geometrics-layers stack))
-         (mapping (if (endp geometrics)
-                      nil
-                      (read-mapping (first geometrics)))))
+         (facets (facets-layer stack)))
     (with-output-to-string (stream)
       (json (stream)
         (object
+          (when slot
+            (slot slot (format *json-stream* facets-object)))
           (slot "height" (value (height aesthetics)))
           (slot "width" (value (width aesthetics)))
           (slot "title" (value (label aesthetics)))
-          (slot "xaxis"
-                (plotly-format-axis (and mapping (x mapping))
-                                    xaxis))
-          (slot "yaxis"
-                (plotly-format-axis (and mapping (y mapping))
-                                    yaxis)))))))
+          (iterate
+            (for g in geometrics)
+            (for i from 1)
+            (for mapping = (read-mapping g))
+            (slot (if (null facets)
+                      "xaxis"
+                      (format nil "xaxis~a" i))
+                  (plotly-format-axis facets
+                                      (and mapping (x mapping))
+                                      xaxis
+                                      i))
+            (slot (if (null facets)
+                      "yaxis"
+                      (format nil "yaxis~a" i))
+                  (plotly-format-axis facets
+                                      (and mapping (y mapping))
+                                      yaxis
+                                      i))))))))
+
 
 
 (defun plotly-visualize (stack stream)
@@ -226,10 +281,10 @@
     (format stream "<script type='text/javascript'>~%")
     (iterate
       (for (name . value) in variables)
-      (format stream "var ~a = ~a;~%~%" name value))
-    (format stream "Plotly.newPlot('plotDiv', [~{~a~^,~}], ~a);~%"
-            data-forms
-            layout)
+      (format stream "var ~a = ~a;~%" name value))
+    (format stream "var data = [~{~a~^,~}];~%~%" data-forms)
+    (format stream "var layout = ~a;~%~%" layout)
+    (format stream "Plotly.newPlot('plotDiv', data, layout);~%")
     (format stream "</script>~%")
     (format stream "</body>")
     (format stream "</html>~%")))

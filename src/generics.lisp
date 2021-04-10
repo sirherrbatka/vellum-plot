@@ -24,3 +24,5 @@
 (defgeneric range (axis))
 (defgeneric constrain (axis))
 (defgeneric scale-anchor (axis))
+(defgeneric rows (layer))
+(defgeneric columns (layer))

@@ -37,6 +37,12 @@
         :mapping mapping))
 
 
+(defun grid (&key rows columns)
+  (make 'grid-layer
+        :rows rows
+        :columns columns))
+
+
 (defun line (&key mapping aesthetics)
   (make 'line-geometrics
         :aesthetics aesthetics

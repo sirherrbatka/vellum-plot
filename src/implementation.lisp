@@ -29,6 +29,10 @@
   :aesthetics-layer)
 
 
+(defmethod layer-category ((layer facets-layer))
+  :facets-layer)
+
+
 (defmethod add ((stack stack-of-layers)
                 (layer fundamental-layer))
   (cl-ds.utils:quasi-clone stack
