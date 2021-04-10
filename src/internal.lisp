@@ -155,10 +155,10 @@
      (with-output-to-string (stream)
        (json (stream)
          (object
-           (slot "xaxis" (if (null facets)
+           (slot "xaxis" (if (or (= number 1) (null facets))
                              (value "x")
                              (valuel :x number)))
-           (slot "yaxis" (if (null facets)
+           (slot "yaxis" (if (or (= number 1) (null facets))
                              (value "y")
                              (valuel :y number)))
            (slot "x" (var x))
@@ -222,9 +222,9 @@
                      (plotly-format-no-nulls "text" (label axis)))
                     (mapping
                      (plotly-format-no-nulls "text" mapping)))))
-      (slot "scaleanchor" (if facets
-                              (valuel (scale-anchor axis) number)
-                              (value (scale-anchor axis))))
+      (slot "scaleanchor" (if (or (= number 1) (null facets))
+                              (value (scale-anchor axis))
+                              (valuel (scale-anchor axis) number)))
       (slot "range" (value (range axis)))
       (slot "constrain" (value (constrain axis)))
       (slot "scaleratio" (value (scale-ratio axis)))
@@ -252,14 +252,14 @@
             (for g in geometrics)
             (for i from 1)
             (for mapping = (read-mapping g))
-            (slot (if (null facets)
+            (slot (if (or (= i 1) (null facets))
                       "xaxis"
                       (format nil "xaxis~a" i))
                   (plotly-format-axis facets
                                       (and mapping (x mapping))
                                       xaxis
                                       i))
-            (slot (if (null facets)
+            (slot (if (or (= i 1) (null facets))
                       "yaxis"
                       (format nil "yaxis~a" i))
                   (plotly-format-axis facets
