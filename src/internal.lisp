@@ -170,7 +170,8 @@
              (slot "z" (var z)))
            (slot "mode" (value (plotly-mode geometrics mapping)))
            (slot "type" (value (plotly-type geometrics)))
-           (slot "name" (value (and aesthetics (label aesthetics))))
+           (slot "name" (value (or (and aesthetics (label aesthetics))
+                                   (y mapping))))
            (slot "marker"
                  (object
                    #1=(cond
@@ -282,7 +283,10 @@
           (slot "width" (value (width aesthetics)))
           (slot "title" (value (label aesthetics)))
           (iterate
+            (with seen = (make-hash-table))
             (for (mapping number) in-hashtable xmapping)
+            (for seen? = (shiftf (gethash number seen) t))
+            (when seen? (next-iteration))
             (slot (if (= number 1)
                       "xaxis"
                       (format nil "xaxis~a" number))
@@ -290,7 +294,10 @@
                                       xaxis
                                       (gethash mapping ymapping))))
           (iterate
+            (with seen = (make-hash-table))
             (for (mapping number) in-hashtable ymapping)
+            (for seen? = (shiftf (gethash number seen) t))
+            (when seen? (next-iteration))
             (slot (if (= number 1)
                       "yaxis"
                       (format nil "yaxis~a" number))
