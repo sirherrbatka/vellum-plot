@@ -113,9 +113,8 @@
         (plotly-format *json-stream* field-name field-value)
         t)))
 
-(defun plotly-generate-data/impl (stack geometrics index.table number)
+(defun plotly-generate-data/impl (stack geometrics index.table ix iy)
   (bind ((mapping (read-mapping geometrics))
-         (facets (facets-layer stack))
          (data (data-layer stack))
          (table (cdr index.table))
          (aesthetics (read-aesthetics geometrics))
@@ -155,12 +154,12 @@
      (with-output-to-string (stream)
        (json (stream)
          (object
-           (slot "xaxis" (if (or (= number 1) (null facets))
+           (slot "xaxis" (if (= ix 1)
                              (value "x")
-                             (valuel :x number)))
-           (slot "yaxis" (if (or (= number 1) (null facets))
+                             (valuel :x ix)))
+           (slot "yaxis" (if (= iy 1)
                              (value "y")
-                             (valuel :y number)))
+                             (valuel :y iy)))
            (slot "x" (var x))
            (slot "y" (var y))
            (unless (null z)
@@ -182,13 +181,15 @@
            (slot "list" (object #1#))))))))
 
 
-(defun plotly-generate-data (stack)
+(defun plotly-generate-data (stack xmapping ymapping)
   (iterate
     (with geometrics = (geometrics-layers stack))
     (with index.table = (cons 0 (make-hash-table)))
     (for g in geometrics)
-    (for i from 1)
-    (collect (plotly-generate-data/impl stack g index.table i)
+    (for mapping = (read-mapping g))
+    (for ix = (gethash mapping xmapping))
+    (for iy = (gethash mapping ymapping))
+    (collect (plotly-generate-data/impl stack g index.table ix iy)
       into data-forms)
     (finally (return (values data-forms
                              (~> index.table
@@ -213,7 +214,26 @@
               (slot "columns" (value (columns facets))))))))
 
 
-(defun plotly-format-axis (facets mapping axis number)
+(defun axis-mapping (facets geometrics)
+  (iterate
+    (with xresult = (make-hash-table :test 'eq))
+    (with yresult = (make-hash-table :test 'eq))
+    (for g in geometrics)
+    (for i from 1)
+    (for mapping = (read-mapping g))
+    (if (null facets)
+        (setf (gethash mapping xresult) 1
+              (gethash mapping yresult) 1)
+        (progn
+          (ensure (gethash mapping xresult)
+            i)
+          (ensure (gethash mapping yresult)
+            i)))
+    (finally (return (list xresult yresult)))))
+
+
+
+(defun plotly-format-axis (mapping axis number)
   (when axis
     (object
       (slot "title"
@@ -222,7 +242,7 @@
                      (plotly-format-no-nulls "text" (label axis)))
                     (mapping
                      (plotly-format-no-nulls "text" mapping)))))
-      (slot "scaleanchor" (if (or (= number 1) (null facets))
+      (slot "scaleanchor" (if (= number 1)
                               (value (scale-anchor axis))
                               (valuel (scale-anchor axis) number)))
       (slot "range" (value (range axis)))
@@ -232,14 +252,12 @@
       (slot "dtick" (value (dtick axis))))))
 
 
-(defun plotly-generate-layout (stack)
+(defun plotly-generate-layout (stack xmapping ymapping)
   (bind ((aesthetics (aesthetics-layer stack))
          (facets (facets-layer stack))
          ((slot facets-object) (plotly-generate-facets facets))
          (xaxis (x aesthetics))
-         (yaxis (y aesthetics))
-         (geometrics (geometrics-layers stack))
-         (facets (facets-layer stack)))
+         (yaxis (y aesthetics)))
     (with-output-to-string (stream)
       (json (stream)
         (object
@@ -249,29 +267,28 @@
           (slot "width" (value (width aesthetics)))
           (slot "title" (value (label aesthetics)))
           (iterate
-            (for g in geometrics)
-            (for i from 1)
-            (for mapping = (read-mapping g))
-            (slot (if (or (= i 1) (null facets))
+            (for (mapping number) in-hashtable xmapping)
+            (slot (if (= number 1)
                       "xaxis"
-                      (format nil "xaxis~a" i))
-                  (plotly-format-axis facets
-                                      (and mapping (x mapping))
+                      (format nil "xaxis~a" number))
+                  (plotly-format-axis (x mapping)
                                       xaxis
-                                      i))
-            (slot (if (or (= i 1) (null facets))
+                                      (gethash mapping ymapping))))
+          (iterate
+            (for (mapping number) in-hashtable ymapping)
+            (slot (if (= number 1)
                       "yaxis"
-                      (format nil "yaxis~a" i))
-                  (plotly-format-axis facets
-                                      (and mapping (y mapping))
+                      (format nil "yaxis~a" number))
+                  (plotly-format-axis (y mapping)
                                       yaxis
-                                      i))))))))
+                                      (gethash mapping xmapping)))))))))
 
 
 
 (defun plotly-visualize (stack stream)
-  (bind ((layout (plotly-generate-layout stack))
-         ((:values data-forms variables) (plotly-generate-data stack)))
+  (bind (((xmapping ymapping) (axis-mapping (facets-layer stack) (geometrics-layers stack)))
+         (layout (plotly-generate-layout stack xmapping ymapping))
+         ((:values data-forms variables) (plotly-generate-data stack xmapping ymapping)))
     (format stream "<html>~%")
     (format stream "<head>~%")
     (format stream "<script src='https://cdn.plot.ly/plotly-latest.min.js'></script></head>~%")
