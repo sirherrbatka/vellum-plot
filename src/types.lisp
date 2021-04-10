@@ -53,7 +53,7 @@
   ())
 
 
-(defclass boxes-geometrics (geometrics-layer)
+(defclass box-geometrics (geometrics-layer)
   ())
 
 

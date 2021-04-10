@@ -55,8 +55,10 @@
         :mapping mapping))
 
 
-(defun boxes ()
-  cl-ds.utils:todo)
+(defun box (&key mapping aesthetics)
+  (make 'box-geometrics
+        :aesthetics aesthetics
+        :mapping mapping))
 
 
 (defun statistics ()

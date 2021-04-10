@@ -74,6 +74,8 @@
   (:method ((geometrics line-geometrics) mapping)
     (if (label mapping) "markers+lines" "lines"))
   (:method ((geometrics heatmap-geometrics) mapping)
+    nil)
+  (:method ((geometrics box-geometrics) mapping)
     nil))
 
 
@@ -82,6 +84,8 @@
     "scatter")
   (:method ((geometrics heatmap-geometrics))
     "heatmap")
+  (:method ((geometrics box-geometrics))
+    "box")
   (:method ((geometrics line-geometrics))
     "scatter"))
 
@@ -282,7 +286,6 @@
                   (plotly-format-axis (y mapping)
                                       yaxis
                                       (gethash mapping xmapping)))))))))
-
 
 
 (defun plotly-visualize (stack stream)

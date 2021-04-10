@@ -3,6 +3,7 @@
 
 (defpackage #:vellum-plot
   (:use #:cl #:vellum.aux-package)
+  (:shadow #:box)
   (:export
    #:aesthetics
    #:points
@@ -11,6 +12,7 @@
    #:missing-required-slot
    #:mapping
    #:grid
+   #:box
    #:heatmap
    #:axis
    #:add))
