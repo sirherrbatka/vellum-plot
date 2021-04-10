@@ -38,7 +38,9 @@
   ((%mapping :initarg :mapping
              :reader read-mapping)
    (%aesthetics :initarg :aesthetics
-                :reader read-aesthetics)))
+                :reader read-aesthetics)
+   (%group :initarg :group
+           :reader group)))
 
 
 (defclass heatmap-geometrics (geometrics-layer)

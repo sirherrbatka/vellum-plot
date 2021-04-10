@@ -26,3 +26,4 @@
 (defgeneric scale-anchor (axis))
 (defgeneric rows (layer))
 (defgeneric columns (layer))
+(defgeneric label (layer))

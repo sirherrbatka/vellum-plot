@@ -220,19 +220,30 @@
 
 (defun axis-mapping (facets geometrics)
   (iterate
+    (with groups =
+          (~> geometrics
+              (cl-ds.alg:on-each #'group)
+              (cl-ds.alg:without #'null)
+              (cl-ds.alg:enumerate :number 1 :test 'equal)))
+    (with geometric-numbers =
+          (~> geometrics
+              (cl-ds.alg:only #'null :key #'group)
+              (cl-ds.alg:enumerate
+               :number (~> groups hash-table-values (extremum #'>) 1+)
+               :test 'eq)))
     (with xresult = (make-hash-table :test 'eq))
     (with yresult = (make-hash-table :test 'eq))
     (for g in geometrics)
-    (for i from 1)
     (for mapping = (read-mapping g))
     (if (null facets)
         (setf (gethash mapping xresult) 1
               (gethash mapping yresult) 1)
-        (progn
+        (let ((number (or (gethash (group g) groups)
+                          (gethash g geometric-numbers))))
           (ensure (gethash mapping xresult)
-            i)
+            number)
           (ensure (gethash mapping yresult)
-            i)))
+            number)))
     (finally (return (list xresult yresult)))))
 
 

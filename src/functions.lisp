@@ -43,20 +43,23 @@
         :columns columns))
 
 
-(defun line (&key mapping aesthetics)
+(defun line (&key mapping aesthetics group)
   (make 'line-geometrics
+        :group group
         :aesthetics aesthetics
         :mapping mapping))
 
 
-(defun heatmap (&key mapping aesthetics)
+(defun heatmap (&key mapping aesthetics group)
   (make 'heatmap-geometrics
+        :group group
         :aesthetics aesthetics
         :mapping mapping))
 
 
-(defun box (&key mapping aesthetics)
+(defun box (&key mapping aesthetics group)
   (make 'box-geometrics
+        :group group
         :aesthetics aesthetics
         :mapping mapping))
 
