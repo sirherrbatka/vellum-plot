@@ -265,7 +265,7 @@
            (~> geometrics
                (cl-ds.alg:only #'null :key #'group)
                (cl-ds.alg:enumerate
-                :number (~> groups hash-table-values (extremum #'>) 1+)
+                :number (~> groups hash-table-values (extremum #'>) (or 0) 1+)
                 :test 'eq)))
          (xresult (make-hash-table :test 'eq))
          (yresult (make-hash-table :test 'eq))

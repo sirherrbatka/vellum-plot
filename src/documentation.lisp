@@ -19,9 +19,24 @@
 
   (function
    line
-   (:description "Specify line plot. You must provide the mapping argument to establish mapping of the data layer to the plot itself."))
+   (:description "Specify line geometrics. You must provide the mapping argument to establish mapping of the data layer to the x, y axis."
+    :notes "All geometrics can be grouped in order to draw subplots."))
+
+  (function
+   heatmap
+   (:description "Specify line geometrics. You must provide the mapping argument to establish mapping of the data layer to x, y, z axis."
+    :notes "All geometrics can be grouped in order to draw subplots.")
+   )
+
+  (function
+   box
+   (:description "Specify box geometrics. You must provide the mapping argument to establish mapping of the data layer to x or y axis."
+    :notes "All geometrics can be grouped in order to draw subplots."))
 
   (function
    mapping
    (:description "Constructs mapping layer. Used for mapping the data layer to the geometrics."))
-   )
+
+  (function
+   axis
+   (:description "Constructs the axis specification. Axis can be grouped in order to draw subplots.")))
