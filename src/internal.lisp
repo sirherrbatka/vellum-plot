@@ -186,8 +186,10 @@
            (slot "list" (object #1#))))))))
 
 
-(defun plotly-generate-data (stack xmapping ymapping)
+(defun plotly-generate-data (stack axis-mapping)
   (iterate
+    (with xmapping = (xmapping axis-mapping))
+    (with ymapping = (ymapping axis-mapping))
     (with geometrics = (geometrics-layers stack))
     (with index.table = (cons 0 (make-hash-table)))
     (for g in geometrics)
@@ -219,34 +221,89 @@
               (slot "columns" (value (columns facets))))))))
 
 
-(defun axis-mapping (facets geometrics)
-  (iterate
-    (with groups =
-          (~> geometrics
-              (cl-ds.alg:on-each #'group)
-              (cl-ds.alg:without #'null)
-              (cl-ds.alg:enumerate :number 1 :test 'equal)))
-    (with geometric-numbers =
-          (~> geometrics
-              (cl-ds.alg:only #'null :key #'group)
-              (cl-ds.alg:enumerate
-               :number (~> groups hash-table-values (extremum #'>) 1+)
-               :test 'eq)))
-    (with xresult = (make-hash-table :test 'eq))
-    (with yresult = (make-hash-table :test 'eq))
-    (for g in geometrics)
-    (for mapping = (read-mapping g))
-    (if (null facets)
-        (setf (gethash mapping xresult) 1
-              (gethash mapping yresult) 1)
-        (let ((number (or (gethash (group g) groups)
-                          (gethash g geometric-numbers))))
-          (ensure (gethash mapping xresult)
-            number)
-          (ensure (gethash mapping yresult)
-            number)))
-    (finally (return (list xresult yresult)))))
+(defclass axis-mapping ()
+  ((%xmapping :initarg :xmapping
+              :reader xmapping)
+   (%ymapping :initarg :ymapping
+              :reader ymapping)
+   (%groups :initarg :groups
+            :reader groups)
+   (%geometric-numbers :initarg :geometric-numbers
+                       :reader geometric-numbers)
+   (%xaxis :initarg :xaxis
+           :reader xaxis)
+   (%yaxis :initarg :yaxis
+           :reader yaxis)))
 
+
+(defun xaxis-for-group (axis-mapping group)
+  (gethash group
+           (xaxis axis-mapping)
+           (gethash nil (xaxis axis-mapping))))
+
+
+(defun yaxis-for-group (axis-mapping group)
+  (gethash group
+           (yaxis axis-mapping)
+           (gethash nil (yaxis axis-mapping))))
+
+
+(defun axis-mapping (stack)
+  (let* ((aesthetics (aesthetics-layer stack))
+         (xaxis (x aesthetics))
+         (yaxis (y aesthetics))
+         (facets (facets-layer stack))
+         (geometrics (geometrics-layers stack))
+         (groups
+           (~> (list geometrics xaxis yaxis)
+               cl-ds.alg:multiplex
+               (cl-ds.alg:on-each #'group)
+               (cl-ds.alg:without #'null)
+               (cl-ds.alg:enumerate :number 1
+                                    :test 'equal)))
+         (geometric-numbers
+           (~> geometrics
+               (cl-ds.alg:only #'null :key #'group)
+               (cl-ds.alg:enumerate
+                :number (~> groups hash-table-values (extremum #'>) 1+)
+                :test 'eq)))
+         (xresult (make-hash-table :test 'eq))
+         (yresult (make-hash-table :test 'eq))
+         (xaxis-map (cl-ds.alg:to-hash-table
+                     xaxis
+                     :test 'equal
+                     :hash-table-key (compose
+                                      (rcurry #'gethash groups)
+                                      #'group)))
+         (yaxis-map (cl-ds.alg:to-hash-table
+                     yaxis
+                     :test 'equal
+                     :hash-table-key (compose
+                                      (rcurry #'gethash groups)
+                                      #'group))))
+    (iterate
+      (for g in geometrics)
+      (for mapping = (read-mapping g))
+      (if (null facets)
+          (setf (gethash mapping xresult) 1
+                (gethash mapping yresult) 1)
+          (let ((number (or (gethash (group g) groups)
+                            (gethash g geometric-numbers))))
+            (ensure (gethash mapping xresult)
+              number)
+            (ensure (gethash mapping yresult)
+              number))))
+    (make 'axis-mapping
+          :xmapping xresult
+          :ymapping yresult
+          :groups groups
+          :xaxis xaxis-map
+          :yaxis yaxis-map
+          :geometric-numbers geometric-numbers)))
+
+
+(defun group-number (axis-mapping group)
+  (gethash group (groups axis-mapping) 1))
 
 
 (defun plotly-format-axis (mapping axis number)
@@ -268,12 +325,10 @@
       (slot "dtick" (value (dtick axis))))))
 
 
-(defun plotly-generate-layout (stack xmapping ymapping)
+(defun plotly-generate-layout (stack axis-mapping)
   (bind ((aesthetics (aesthetics-layer stack))
          (facets (facets-layer stack))
-         ((slot facets-object) (plotly-generate-facets facets))
-         (xaxis (x aesthetics))
-         (yaxis (y aesthetics)))
+         ((slot facets-object) (plotly-generate-facets facets)))
     (with-output-to-string (stream)
       (json (stream)
         (object
@@ -284,32 +339,32 @@
           (slot "title" (value (label aesthetics)))
           (iterate
             (with seen = (make-hash-table))
-            (for (mapping number) in-hashtable xmapping)
+            (for (mapping number) in-hashtable (xmapping axis-mapping))
             (for seen? = (shiftf (gethash number seen) t))
             (when seen? (next-iteration))
             (slot (if (= number 1)
                       "xaxis"
                       (format nil "xaxis~a" number))
                   (plotly-format-axis (x mapping)
-                                      xaxis
-                                      (gethash mapping ymapping))))
+                                      (xaxis-for-group axis-mapping number)
+                                      number)))
           (iterate
             (with seen = (make-hash-table))
-            (for (mapping number) in-hashtable ymapping)
+            (for (mapping number) in-hashtable (ymapping axis-mapping))
             (for seen? = (shiftf (gethash number seen) t))
             (when seen? (next-iteration))
             (slot (if (= number 1)
                       "yaxis"
                       (format nil "yaxis~a" number))
                   (plotly-format-axis (y mapping)
-                                      yaxis
-                                      (gethash mapping xmapping)))))))))
+                                      (yaxis-for-group axis-mapping number)
+                                      number))))))))
 
 
 (defun plotly-visualize (stack stream)
-  (bind (((xmapping ymapping) (axis-mapping (facets-layer stack) (geometrics-layers stack)))
-         (layout (plotly-generate-layout stack xmapping ymapping))
-         ((:values data-forms variables) (plotly-generate-data stack xmapping ymapping)))
+  (bind ((axis-mapping (axis-mapping stack))
+         (layout (plotly-generate-layout stack axis-mapping))
+         ((:values data-forms variables) (plotly-generate-data stack axis-mapping)))
     (format stream "<html>~%")
     (format stream "<head>~%")
     (format stream "<script src='https://cdn.plot.ly/plotly-latest.min.js'></script></head>~%")
@@ -326,3 +381,10 @@
     (format stream "</script>~%")
     (format stream "</body>")
     (format stream "</html>~%")))
+
+
+(defun labeled (data label)
+  (~>> data
+       plist-alist
+       (remove-if-not (curry #'eq label) _ :key #'car)
+       (mapcar #'cdr)))

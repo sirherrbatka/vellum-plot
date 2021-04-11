@@ -92,7 +92,9 @@
    (%range :initarg :range
            :reader range)
    (%dtick :initarg :dtick
-           :reader dtick)))
+           :reader dtick)
+   (%group :initarg :group
+           :reader group)))
 
 
 (defclass aesthetics-layer (fundamental-layer)

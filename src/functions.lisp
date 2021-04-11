@@ -1,11 +1,12 @@
 (cl:in-package #:vellum-plot)
 
 
-(defun aesthetics (&key x y color shape size label label-position
-                        width height)
+(defun aesthetics (&rest axis
+                   &key color shape size label label-position
+                     width height &allow-other-keys)
   (make 'aesthetics-layer
-        :x x
-        :y y
+        :x (labeled axis :x)
+        :y (labeled axis :y)
         :width width
         :height height
         :label label
@@ -78,8 +79,9 @@
 
 (defun axis (&key scale-anchor label
                   dtick tick-length constrain
-                  scale-ratio range)
+                  scale-ratio range group)
   (make 'axis
+        :group group
         :scale-ratio scale-ratio
         :tick-length tick-length
         :scale-anchor scale-anchor
