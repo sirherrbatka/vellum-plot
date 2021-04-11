@@ -20,4 +20,5 @@
                (:file "types")
                (:file "internal")
                (:file "functions")
-               (:file "implementation")))
+               (:file "implementation")
+               (:file "documentation")))
