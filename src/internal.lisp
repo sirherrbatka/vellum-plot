@@ -61,7 +61,7 @@
          table
          :key (lambda (&rest ignored)
                 (declare (ignore ignored))
-                (let ((content (vellum.header:rr column)))
+                (let ((content (vellum:rr column)))
                   (typecase content
                     (double-float (coerce content 'single-float))
                     (string (format nil "'~a'" content))
