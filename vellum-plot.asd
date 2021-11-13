@@ -8,7 +8,7 @@
   :author "Marek Kochanowicz"
   :depends-on ( #:iterate
                 #:serapeum
-                (:version #:vellum ((>= "1.0.0")))
+                (:version #:vellum ((>= "1.2.0")))
                 #:alexandria
                 #:documentation-utils-extensions)
   :serial T
