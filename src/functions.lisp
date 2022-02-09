@@ -32,8 +32,9 @@
   cl-ds.utils:todo)
 
 
-(defun points (&key mapping aesthetics)
+(defun points (&key mapping aesthetics group)
   (make 'points-geometrics
+        :group group
         :aesthetics aesthetics
         :mapping mapping))
 
