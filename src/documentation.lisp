@@ -30,7 +30,7 @@
 
   (function
    box
-   (:description "Specify box geometrics. You must provide the mapping argument to establish mapping of the data layer to x or y axis."
+   (:description "Specify box geometrics. You must provide the mapping argument to establish mapping of the data layer to x, y axis."
     :notes "All geometrics can be grouped in order to draw subplots."))
 
   (function

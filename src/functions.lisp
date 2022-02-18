@@ -66,6 +66,13 @@
         :mapping mapping))
 
 
+(defun bar (&key mapping aesthetics group)
+  (make 'bar-geometrics
+        :group group
+        :aesthetics aesthetics
+        :mapping mapping))
+
+
 (defun statistics ()
   cl-ds.utils:todo)
 

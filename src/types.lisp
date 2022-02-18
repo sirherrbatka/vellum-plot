@@ -59,6 +59,10 @@
   ())
 
 
+(defclass bar-geometrics (geometrics-layer)
+  ())
+
+
 (defclass mapping ()
   ((%x :initarg :x
        :reader x)

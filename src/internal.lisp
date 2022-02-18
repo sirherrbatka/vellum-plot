@@ -86,6 +86,8 @@
     "heatmap")
   (:method ((geometrics box-geometrics))
     "box")
+  (:method ((geometrics bar-geometrics))
+    "bar")
   (:method ((geometrics line-geometrics))
     "scatter"))
 

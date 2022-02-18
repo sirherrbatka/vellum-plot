@@ -12,6 +12,7 @@
    #:missing-required-slot
    #:mapping
    #:grid
+   #:bar
    #:box
    #:heatmap
    #:axis
