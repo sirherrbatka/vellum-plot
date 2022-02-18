@@ -13,6 +13,7 @@
    #:mapping
    #:grid
    #:bar
+   #:barmode
    #:box
    #:heatmap
    #:axis

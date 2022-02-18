@@ -45,6 +45,11 @@
         :columns columns))
 
 
+(defun barmode (&key mode)
+  (make 'barmode-layer
+        :mode mode))
+
+
 (defun line (&key mapping aesthetics group)
   (make 'line-geometrics
         :group group

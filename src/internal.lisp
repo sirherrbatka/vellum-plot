@@ -75,6 +75,8 @@
     (if (label mapping) "markers+lines" "lines"))
   (:method ((geometrics heatmap-geometrics) mapping)
     nil)
+  (:method ((geometrics bar-geometrics) mapping)
+    nil)
   (:method ((geometrics box-geometrics) mapping)
     nil))
 
@@ -221,6 +223,14 @@
               (slot "pattern" (value "independent"))
               (slot "rows" (value (rows facets)))
               (slot "columns" (value (columns facets))))))))
+
+
+(defmethod plotly-generate-facets ((facets barmode-layer))
+  (list "mode"
+        (with-output-to-string (stream)
+          (json (stream)
+            (object
+              (slot "barmode" (value (mode facets))))))))
 
 
 (defclass axis-mapping ()

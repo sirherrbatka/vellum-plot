@@ -127,3 +127,8 @@
           :reader rows)
    (%columns :initarg :columns
              :reader columns)))
+
+
+(defclass barmode-layer (facets-layer)
+  ((%mode :initarg :mode
+          :reader mode)))
