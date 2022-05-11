@@ -373,26 +373,29 @@
                                       number))))))))
 
 
-(defun plotly-visualize (stack stream)
+(defun plotly-visualize (stack stream &key only-script div-id)
   (bind ((axis-mapping (axis-mapping stack))
          (layout (plotly-generate-layout stack axis-mapping))
          ((:values data-forms variables) (plotly-generate-data stack axis-mapping)))
-    (format stream "<html>~%")
-    (format stream "<head>~%")
-    (format stream "<script src='https://cdn.plot.ly/plotly-latest.min.js'></script></head>~%")
-    (format stream "<body>")
-    (format stream
-            "<div id='plotDiv'><!-- Plotly chart will be drawn inside this DIV --></div>~%")
+    (unless only-script
+      (format stream "<html>~%")
+      (format stream "<head>~%")
+      (format stream "<script src='https://cdn.plot.ly/plotly-latest.min.js'></script></head>~%")
+      (format stream "<body>")
+      (format stream
+              "<div id='~a'><!-- Plotly chart will be drawn inside this DIV --></div>~%"
+              div-id))
     (format stream "<script type='text/javascript'>~%")
     (iterate
       (for (name . value) in variables)
       (format stream "var ~a = ~a;~%" name value))
     (format stream "var data = [~{~a~^,~}];~%~%" data-forms)
     (format stream "var layout = ~a;~%~%" layout)
-    (format stream "Plotly.newPlot('plotDiv', data, layout);~%")
+    (format stream "Plotly.newPlot('~a', data, layout);~%" div-id)
     (format stream "</script>~%")
-    (format stream "</body>")
-    (format stream "</html>~%")))
+    (unless only-script
+      (format stream "</body>")
+      (format stream "</html>~%"))))
 
 
 (defun labeled (data label)

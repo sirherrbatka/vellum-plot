@@ -49,12 +49,18 @@
 
 (defmethod vellum:visualize ((backend (eql :plotly))
                              (stack stack-of-layers)
-                             (destination stream))
-  (plotly-visualize stack destination))
+                             (destination stream)
+                             &rest options
+                             &key (only-script nil) (div-id "plotDiv"))
+  (declare (ignore options))
+  (plotly-visualize stack destination :only-script only-script :div-id div-id))
 
 
 (defmethod vellum:visualize ((backend (eql :plotly))
                              (stack stack-of-layers)
-                             destination)
+                             destination
+                             &rest options
+                             &key (only-script nil) (div-id "plotDiv"))
+  (declare (ignore only-script div-id))
   (with-output-to-file (stream destination)
-    (vellum:visualize :plotly stack stream)))
+    (apply #'vellum:visualize :plotly stack stream options)))
