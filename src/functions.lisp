@@ -16,13 +16,12 @@
         :size size))
 
 
-(defun mapping (&key x y z color shape size label label-position)
+(defun mapping (&key x y z color shape size label)
   (make 'mapping
         :x x
         :y y
         :z z
         :label label
-        :label-position label-position
         :color color
         :shape shape
         :size size))

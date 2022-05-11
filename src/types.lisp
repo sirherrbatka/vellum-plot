@@ -76,8 +76,6 @@
            :reader shape)
    (%label :initarg :label
            :reader label)
-   (%label-position :initarg :label-position
-                    :reader label-position)
    (%size :initarg :size
           :reader size)))
 

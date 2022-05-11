@@ -132,7 +132,8 @@
          (color (with-bind-slot-restart (color mapping)))
          (shape (with-bind-slot-restart (shape mapping)))
          (label  (with-bind-slot-restart (label mapping)))
-         (size (with-bind-slot-restart (size mapping))))
+         (size (with-bind-slot-restart (size mapping)))
+         (mode (plotly-mode geometrics mapping)))
     (declare (ignore shape))
     (macrolet ((set-name (axis)
                  (with-gensyms (!number !data !index)
@@ -176,17 +177,23 @@
            (slot "type" (value (plotly-type geometrics)))
            (slot "name" (value (or (and aesthetics (label aesthetics))
                                    (y mapping))))
-           (slot "marker"
-                 (object
-                   #1=(cond
-                        (color (slot "color" (var color)))
-                        (aesthetics (slot "color" (value (color aesthetics)))))
-                   (when size
-                     (slot "size" (var size)))
-                   (when label
-                     (slot "text" (var label)))
-                   (slot "textposition"
-                         (value (and aesthetics (label-position aesthetics))))))
+           (if (string= mode "markers+text")
+               (progn
+                 (when label
+                   (slot "text" (var label)))
+                 (slot "textposition"
+                       (value (and aesthetics (label-position aesthetics)))))
+               (slot "marker"
+                     (object
+                       #1=(cond
+                            (color (slot "color" (var color)))
+                            (aesthetics (slot "color" (value (color aesthetics)))))
+                       (when size
+                         (slot "size" (var size)))
+                       (when label
+                         (slot "text" (var label)))
+                       (slot "textposition"
+                             (value (and aesthetics (label-position aesthetics)))))))
            (slot "list" (object #1#))))))))
 
 
@@ -384,16 +391,16 @@
       (format stream "<body>")
       (format stream
               "<div id='~a'><!-- Plotly chart will be drawn inside this DIV --></div>~%"
-              div-id))
-    (format stream "<script type='text/javascript'>~%")
+              div-id)
+      (format stream "<script type='text/javascript'>~%"))
     (iterate
       (for (name . value) in variables)
       (format stream "var ~a = ~a;~%" name value))
     (format stream "var data = [~{~a~^,~}];~%~%" data-forms)
     (format stream "var layout = ~a;~%~%" layout)
     (format stream "Plotly.newPlot('~a', data, layout);~%" div-id)
-    (format stream "</script>~%")
     (unless only-script
+      (format stream "</script>~%")
       (format stream "</body>")
       (format stream "</html>~%"))))
 
