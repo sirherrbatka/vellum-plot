@@ -3,11 +3,14 @@
 
 (defun aesthetics (&rest axis
                    &key color shape size label label-position
-                     width height &allow-other-keys)
+                     bargap
+                     width height mode &allow-other-keys)
   (make 'aesthetics-layer
         :x (labeled axis :x)
         :y (labeled axis :y)
         :width width
+        :bargap bargap
+        :mode mode
         :height height
         :label label
         :label-position label-position

@@ -27,3 +27,4 @@
 (defgeneric rows (layer))
 (defgeneric columns (layer))
 (defgeneric label (layer))
+(defgeneric mode (layer))

@@ -70,9 +70,13 @@
 
 (defgeneric plotly-mode (geometrics mapping)
   (:method ((geometrics points-geometrics) mapping)
-    (if (label mapping) "markers+text" "markers"))
+    (or (and (read-aesthetics geometrics)
+             (~> geometrics read-aesthetics mode))
+        (if (label mapping) "markers+text" "markers")))
   (:method ((geometrics line-geometrics) mapping)
-    (if (label mapping) "markers+lines" "lines"))
+    (or (and (read-aesthetics geometrics)
+             (~> geometrics read-aesthetics mode))
+        (if (label mapping) "markers+lines" "lines")))
   (:method ((geometrics heatmap-geometrics) mapping)
     nil)
   (:method ((geometrics bar-geometrics) mapping)
@@ -356,6 +360,7 @@
           (slot "height" (value (height aesthetics)))
           (slot "width" (value (width aesthetics)))
           (slot "title" (value (label aesthetics)))
+          (slot "bargap" (value (bargap aesthetics)))
           (iterate
             (with seen = (make-hash-table))
             (for (mapping number) in-hashtable (xmapping axis-mapping))

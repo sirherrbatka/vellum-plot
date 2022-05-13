@@ -110,12 +110,16 @@
            :reader width)
    (%color :initarg :color
            :reader color)
+   (%bargap :initarg :bargap
+            :reader bargap)
    (%shape :initarg :shape
            :reader shape)
    (%label :initarg :label
            :reader label)
    (%label-position :initarg :label-position
                     :reader label-position)
+   (%mode :initarg :mode
+          :reader mode)
    (%size :initarg :size
           :reader size)))
 
