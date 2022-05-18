@@ -81,6 +81,8 @@
     nil)
   (:method ((geometrics bar-geometrics) mapping)
     nil)
+  (:method ((geometrics histogram-geometrics) mapping)
+    nil)
   (:method ((geometrics box-geometrics) mapping)
     nil))
 
