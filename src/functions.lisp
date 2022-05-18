@@ -80,6 +80,13 @@
         :mapping mapping))
 
 
+(defun histogram (&key mapping aesthetics group)
+  (make 'histogram-geometrics
+        :group group
+        :aesthetics aesthetics
+        :mapping mapping))
+
+
 (defun statistics ()
   cl-ds.utils:todo)
 
