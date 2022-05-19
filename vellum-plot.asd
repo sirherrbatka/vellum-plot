@@ -1,6 +1,3 @@
-(cl:in-package #:cl-user)
-
-
 (asdf:defsystem vellum-plot
   :name "vellum-plot"
   :version "1.0.0"
